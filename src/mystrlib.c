@@ -53,3 +53,10 @@ int mystrcmp(char *str1, char *str2)
 		return 1;
 	return -1;
 }
+
+void copy_str(char *src, char *dest, size_t len)
+{
+  size_t i = 0;
+  for(i = 0; i< len; i++)
+    dest[i] = src[i];
+}

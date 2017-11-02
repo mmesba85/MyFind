@@ -1,9 +1,16 @@
 #ifndef MYFIND_H
 #define MYFIND_H
 
+
 struct expressions_list
 {
-  char *exp;
+  struct stack *start;
+};
+
+struct stack
+{
+  char *data;
+  struct stack *next;
 };
 
 
