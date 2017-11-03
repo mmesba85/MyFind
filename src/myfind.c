@@ -4,6 +4,6 @@
 int main()
 {
   
-  return myfind(".", NULL, 0, 0, 1, 0);
+  return myfind("./", NULL, 0, 0, 0, 0);
 
 }

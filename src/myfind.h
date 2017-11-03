@@ -1,6 +1,20 @@
 #ifndef MYFIND_H
 #define MYFIND_H
 
+#define OPT_DEFAULT 0
+#define OPT_D 1
+#define OPT_L 2
+#define OPT_P 3
+#define OPT_H 4
+
+struct info_command
+{
+  int opt_d;
+  int opt;
+  char *file;
+  struct expressions_list *el;
+};
+
 
 struct expressions_list
 {
