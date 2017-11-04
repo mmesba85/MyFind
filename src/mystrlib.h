@@ -7,5 +7,6 @@ size_t mystrlen(char *str);
 void make_path(char *res, char *path, char *dir_name);
 int mystrcmp(char *str1, char *str2);
 void copy_str(char *src, char *dest, size_t len);
+int mystrcat(char *res, char *str, int b, int res_len);
 
 #endif /* MYSTRLIB_H */
