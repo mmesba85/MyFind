@@ -60,3 +60,20 @@ void copy_str(char *src, char *dest, size_t len)
   for(i = 0; i< len; i++)
     dest[i] = src[i];
 }
+
+int mystrcat(char *res, char *str, int b, int res_len)
+{
+	size_t len = mystrlen(str);
+	size_t i = 0;
+	int j = 0;
+	while(i < len)
+	{
+		if(b+j > res_len)
+			return 0;
+		res[b+j] = str[i];
+		j++;
+		i++;
+	}
+	res[b+j] = '\0';
+	return j;
+}
