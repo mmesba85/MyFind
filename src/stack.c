@@ -22,7 +22,7 @@ void push(struct expressions_list *el, char *data)
   el->start = new;
 }
 
-char *pull(struct expressions_list *el)
+char *pop(struct expressions_list *el)
 {
   if (!el)
     return NULL;
@@ -39,7 +39,7 @@ char *pull(struct expressions_list *el)
   return NULL;
 }
 
-void print_path(struct expressions_list *el)
+void print_s(struct expressions_list *el)
 {
   if(!el)
     return;
@@ -54,7 +54,7 @@ void print_path(struct expressions_list *el)
 void free_path(struct expressions_list *el)
 {
   while(el->start)
-    pull(el);
+    pop(el);
   free(el);
 }
 
