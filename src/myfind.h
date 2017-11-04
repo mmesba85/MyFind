@@ -29,5 +29,10 @@ struct stack
 
 
 int myfind(char *dir_name, struct expressions_list *el, int is_d, int is_h, int is_l, int is_p);
+struct info_command *get_info_command(int argc, char **argv);
+struct expressions_list *initialize();
+void push(struct expressions_list *el, char *data);
+char *pop(struct expressions_list *el);
+void print_s(struct expressions_list *el);
 
 #endif /* MYFIND_H */
