@@ -4,6 +4,10 @@
 int main(int argc, char **argv)
 {
   struct info_command *ic = get_info_command(argc, argv);
-  print_s(ic->el);
+  if(ic->file == NULL)
+  	myfind(".", ic);
+  else
+  	myfind(ic->file, ic);
+  free_ic(ic);
   return 0;
 }
