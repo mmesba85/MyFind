@@ -17,7 +17,10 @@ void push(struct expressions_list *el, char *data)
   struct stack *new = malloc(sizeof(struct stack));
   if (!new || !el)
     return;
-  new->data = data;
+  size_t len = mystrlen(data);
+  char *aux = malloc(len);
+  copy_str(data, aux, len);
+  new->data = aux;
   new->next = el->start;
   el->start = new;
 }
@@ -32,6 +35,7 @@ char *pop(struct expressions_list *el)
     size_t len = mystrlen(s->data);
     char *res = malloc(len);
     copy_str(s->data, res, len);
+    free(s->data);
     el->start = s->next;
     free(s);
     return res;
@@ -54,7 +58,30 @@ void print_s(struct expressions_list *el)
 void free_path(struct expressions_list *el)
 {
   while(el->start)
-    pop(el);
+  {
+   	char *aux = pop(el);
+   	free(aux);
+  }
   free(el);
 }
+
+struct expressions_list *copy_stack(struct expressions_list *el)
+{
+	struct expressions_list *res = initialize();
+	struct expressions_list *tmp = initialize();
+	while(el->start)
+	{
+		char *data = pop(el);
+		push(tmp, data);
+	}
+	while(tmp->start)
+	{
+		char *data = pop(tmp);
+		push(el, data);
+		push(res, data);
+	}
+	free_path(tmp);
+	return res;
+}
+
 

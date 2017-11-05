@@ -5,13 +5,12 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fnmatch.h>
 #include "myfind.h"
 #include "mystrlib.h"
 
-
-int myfind(char *dir_name, struct expressions_list *el, int is_d, int is_h, int is_l, int is_p)
+int myfind(char *dir_name, struct info_command *ic)
 {
-  el = el;
   DIR *dir = NULL;
   if(dir_name)
     dir = opendir(dir_name);
@@ -21,33 +20,54 @@ int myfind(char *dir_name, struct expressions_list *el, int is_d, int is_h, int 
     return 1;
   
   struct dirent *readfile;
-  if(is_h == 0)
+  struct stat buff;
+  int st = lstat(dir_name, &buff);
+  if( st == -1)
+  	return 1;
+  if(S_ISLNK(buff.st_mode) != 0)
   {
-  	struct stat buff;
-  	int st = lstat(dir_name, &buff);
-  	if( st == -1)
-  		return 1;
-  	if(S_ISLNK(buff.st_mode) != 0)
+  	if(ic->opt == OPT_H)
+  		ic->opt = OPT_DEFAULT;
+  	else if(ic->opt != OPT_L)
   		return 1;
   }
-  if(is_d == 0)
-  	printf("%s\n", dir_name);
+  
+  if(ic->opt_d == OPT_DEFAULT)
+  {
+  	if(ic->el == NULL)
+    	printf("%s\n", dir_name);
+    else
+    	check_el(dir_name, NULL, ic); 
+  }
+
   while((readfile = readdir(dir)))
   {
     if(mystrcmp(readfile->d_name, ".") == 0 || mystrcmp(readfile->d_name, "..") == 0)
       continue;
+    
     char dir_path[mystrlen(dir_name) + mystrlen (readfile->d_name) + 1];
     make_path(dir_path, dir_name, readfile->d_name);
+
     if(readfile->d_type == DT_DIR && mystrcmp(readfile->d_name, ".") != 0 
       && mystrcmp(readfile->d_name, "..") != 0)
-    	myfind(dir_path, el, is_d, 0, is_l, is_p);
-    else if(readfile->d_type == DT_LNK && is_l == 1)
-    	myfind(dir_path, el, is_d, 1, is_l, is_p);
-    else
-    	printf("%s\n",dir_path); 
+    	myfind(dir_path, ic);
+    else if(readfile->d_type == DT_LNK && ic->opt == OPT_L)
+    	myfind(dir_path, ic);
+   	else
+    {
+    	if(ic->el == NULL)
+    		printf("%s\n", dir_path);
+    	else
+    		check_el(dir_path, readfile, ic); 
+  	}
   }
-  if(is_d == 1)
-  	printf("%s\n",dir_name);
+  if(ic->opt_d == OPT_D)
+  {
+  	if(ic->el == NULL)
+    	printf("%s\n", dir_name);
+    else
+    	check_el(dir_name, readfile, ic); 
+  }
   closedir(dir);
   return 0;
 }
