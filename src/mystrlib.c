@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "mystrlib.h"
 
 size_t mystrlen(char *str)
@@ -18,8 +19,11 @@ void make_path(char *res, char *path, char *dir_name)
 		res[i] = path[i];
 		i++;
 	}
-	res[i] = '/';
-	i++;
+	if(res[i-1] != '/')
+	{	
+		res[i] = '/';
+		i++;
+	}
 	len = mystrlen(dir_name);
 	while(j < len)
 	{
@@ -59,6 +63,7 @@ void copy_str(char *src, char *dest, size_t len)
   size_t i = 0;
   for(i = 0; i< len; i++)
     dest[i] = src[i];
+  dest[len] = '\0';
 }
 
 int mystrcat(char *res, char *str, int b, int res_len)
@@ -76,4 +81,17 @@ int mystrcat(char *res, char *str, int b, int res_len)
 	}
 	res[b+j] = '\0';
 	return j;
+}
+
+char *get_type(char *expr)
+{
+	char *res = malloc(6);
+	size_t i = 0;
+	while(expr[i] != ' ')
+	{
+		res[i] = expr[i];
+		i++;
+	}
+	res[i] = '\0';
+	return res;
 }
