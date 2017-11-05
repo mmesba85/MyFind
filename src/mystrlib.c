@@ -85,13 +85,22 @@ int mystrcat(char *res, char *str, int b, int res_len)
 
 char *get_type(char *expr)
 {
+	size_t len = mystrlen(expr);
 	char *res = malloc(6);
 	size_t i = 0;
-	while(expr[i] != ' ')
+	if(mystrcmp(expr, "-print") == 0)
 	{
-		res[i] = expr[i];
-		i++;
+		res = "-print";
+		return res;
 	}
-	res[i] = '\0';
+	if(len > 6)
+	{
+		while(expr[i] != ' ')
+		{
+			res[i] = expr[i];
+			i++;
+		}
+		res[i] = '\0';
+	}
 	return res;
 }

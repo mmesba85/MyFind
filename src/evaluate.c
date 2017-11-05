@@ -116,6 +116,8 @@ int evaluate(char *path, struct dirent *readfile, char *expr)
 		return check_name(path, readfile, expr);
 	else if(mystrcmp(type, "-type") == 0)
 		return check_type(path, readfile, expr);
+	else if(mystrcmp(type, "-print") == 0)
+		return 1;
 	free(type);
 	return 0;
 }
@@ -161,7 +163,7 @@ int check_el(char *path, struct dirent *readfile, struct info_command *ic)
 		}
 		free(token);
 	}
-	if(res == 1)
+	if(res >= 1)
 		printf("%s\n", path);
 	free_path(el);
 	return res;
