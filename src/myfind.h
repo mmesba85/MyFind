@@ -9,11 +9,18 @@
 
 #include <dirent.h>
 
+#define MAX_FILE_NAME 255
+#define ERROR_ARG 1
+#define ERROR_PARS 2
+#define ERROR_PRD 3
+#define NO_DIR 4
+
 struct info_command
 {
   int opt_d;
   int opt;
-  char *file;
+  int nb_files;
+  char **files;
   struct expressions_list *el;
 };
 
@@ -41,4 +48,7 @@ int evaluate(char *path, struct dirent *readfile, char *exp);
 struct expressions_list *copy_stack(struct expressions_list *el);
 void free_path(struct expressions_list *el);
 void free_ic(struct info_command *ic);
+struct info_command *initialize_ic();
+int myparser(int argc, char **argv, struct info_command *ic);
+
 #endif /* MYFIND_H */
