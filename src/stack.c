@@ -73,12 +73,14 @@ struct expressions_list *copy_stack(struct expressions_list *el)
 	{
 		char *data = pop(el);
 		push(tmp, data);
+		free(data);
 	}
 	while(tmp->start)
 	{
 		char *data = pop(tmp);
 		push(el, data);
 		push(res, data);
+		free(data);
 	}
 	free_path(tmp);
 	return res;
