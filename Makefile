@@ -1,6 +1,6 @@
 CC=gcc
 EXEC=myfind
-SRC= myfind.c mystrlib.c explore_dir.c stack.c parser.c evaluate.c
+SRC= myfind.c mystrlib.c stack.c parser.c evaluate.c
 OBJ= $(SRC:.c=.o)
 CFLAGS=-Wall -Werror -Wextra -pedantic -std=c99 -g
 VPATH=src
@@ -13,6 +13,12 @@ myfind: $(OBJ)
 
 %.o: %.c
 	$(CC) -o $@ -c $< $(CFLAGS)
+
+doc:
+	doxygen config_doc
+
+test:
+	tests/test.sh
 	
 .PHONY: clean mrproper test
 
