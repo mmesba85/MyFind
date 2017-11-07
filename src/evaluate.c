@@ -15,7 +15,7 @@ int check_name(char *path, struct dirent *readfile, char *expr)
 		return 2;
 	if(readfile != NULL && fnmatch(expr+6, readfile->d_name, FNM_PATHNAME) == 0)
 		return 1;
-	else if(fnmatch(expr+6, path, FNM_PATHNAME) == 0)
+	else if(fnmatch(expr+6, path, FNM_NOESCAPE) == 0)
 		return 1;
 	return 0;
 }
@@ -113,11 +113,20 @@ int evaluate(char *path, struct dirent *readfile, char *expr)
 {
 	char *type = get_type(expr);
 	if(mystrcmp(type, "-name") == 0)
+	{
+		free(type);
 		return check_name(path, readfile, expr);
+	}
 	else if(mystrcmp(type, "-type") == 0)
+	{
+		free(type);
 		return check_type(path, readfile, expr);
+	}
 	else if(mystrcmp(type, "-print") == 0)
+	{
+		free(type);
 		return 1;
+	}
 	free(type);
 	return 0;
 }
@@ -136,7 +145,7 @@ int check_el(char *path, struct dirent *readfile, struct info_command *ic)
 			char *expr = pop(el);
 			int aux = evaluate(path, readfile, expr);
 			free(expr);
-			res += aux;
+			res = (aux + res) - (aux * res);
 			first++;
 			current_op = 0;
 		}
@@ -157,13 +166,13 @@ int check_el(char *path, struct dirent *readfile, struct info_command *ic)
 		{
 			int aux = evaluate(path, readfile, token);
 			if(current_op == 0)
-				res += aux;
+				res = (aux + res) - (aux * res);
 			else
 				res *= aux;
 		}
 		free(token);
 	}
-	if(res >= 1)
+	if(res == 1)
 		printf("%s\n", path);
 	free_path(el);
 	return res;

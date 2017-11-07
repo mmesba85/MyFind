@@ -34,6 +34,8 @@ char *pop(struct expressions_list *el)
   {
     size_t len = mystrlen(s->data);
     char *res = malloc(len);
+    if(!res)
+    	return NULL;
     copy_str(s->data, res, len);
     free(s->data);
     el->start = s->next;

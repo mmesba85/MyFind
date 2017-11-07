@@ -1,13 +1,13 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <err.h>
 #include "myfind.h"
 #include "mystrlib.h"
 
 int get_opt(char **argv, struct info_command *ic)
 {
   int i = 1;
-  ic->opt_d = OPT_DEFAULT;
-  ic->opt = OPT_DEFAULT;
   while(argv[i])
   {
     if(argv[i][0] == '-')
@@ -30,10 +30,10 @@ int get_opt(char **argv, struct info_command *ic)
       }
       else
         break;
-      i++;
     }
     else
       break;
+    i++;
   }
   return i;
 }
@@ -43,7 +43,6 @@ int get_file(int argc, char **argv, int index, struct info_command *ic)
   int nb = 0;
   int i = index;
   int j = 0;
-  printf("%d %d\n", argc, index);
   while(index < argc)
   { 
     if(argv[index][0] == '-' || argv[index][0] == '(')
@@ -52,16 +51,18 @@ int get_file(int argc, char **argv, int index, struct info_command *ic)
     index++;
   }
   char **files = malloc(nb * sizeof(char *));
-  ic->nb = nb;
-  while(i <= nb)
+  if(!files)
+    return 1;
+  ic->nb_files = nb;
+  while(j <= nb && i < argc)
   {
     int len = mystrlen(argv[i]);
     files[j] = malloc(len);
+    if(!files[j])
+      return 1;
     copy_str(argv[i], files[j], len);
-    printf("%s\n", files[j]);
     i++;
-    j++;
-    
+    j++; 
   }
   ic->files = files;
   return index;
@@ -87,6 +88,51 @@ int is_precedence(char *op1, char *op2)
   }
   else
     return 1;
+}
+
+int check_command(int argc, char **argv, int index)
+{
+  if(mystrcmp(argv[index], "-name") != 0 && mystrcmp(argv[index], "-type") != 0
+    && mystrcmp(argv[index], "-print") != 0 && mystrcmp(argv[index], "-exec") != 0)
+  {
+    warnx("unknown predicate '%s'", argv[index]);
+    return ERROR_PRD;
+  }
+  if(mystrcmp(argv[index], "-name") == 0 || mystrcmp(argv[index], "-type") == 0
+    || mystrcmp(argv[index], "-exec") == 0)
+  {
+    if(index+1 >= argc)
+    {
+      warnx("missing argument to '%s'", argv[index]);
+      return ERROR_ARG;
+    }
+  }
+  return 0;
+}
+
+int get_command(int argc, char **argv, int index, struct expressions_list *output)
+{
+  int res = check_command(argc, argv, index);
+  if(res != 0)
+    return res;
+  if(mystrcmp(argv[index], "-name") == 0 || mystrcmp(argv[index], "-type") == 0)
+  {
+    int len = mystrlen(argv[index]);
+    char *data = malloc(len + 1);
+    if(!data)
+      return 1;
+    int s = mystrcat(data, argv[index], 0, len);
+    index++;
+    len += mystrlen(argv[index]);
+    data = realloc(data, len+2);
+    if(!data)
+      return 1;
+    data[s] = ' ';
+    s = mystrcat(data, argv[index], s+1, len);
+    push(output, data);
+    free(data);
+  }
+  return 0;
 }
 
 int get_expr(int argc, char **argv, int index, struct info_command *ic)
@@ -123,22 +169,10 @@ int get_expr(int argc, char **argv, int index, struct info_command *ic)
     }
     else if(index < argc && argv[index][0] == '-')
     {
-      int len = mystrlen(argv[index]);
-      char *data = malloc(len);
-      int s = mystrcat(data, argv[index], 0, len);
-      index++;
-
-      while(index < argc && argv[index][0] != '-' 
-        && argv[index][0] != '(' && argv[index][0] != ')')
-      {
-        len += mystrlen(argv[index]);
-        data = realloc(data, len+1);
-        data[s] = ' ';
-        s = mystrcat(data, argv[index], s+1, len);
-        index++;  
-      }
-      push(output, data);
-      free(data);
+      int res = get_command(argc, argv, index, output);
+      if(res != 0)
+        return res;
+      index += 2;
       aux = 1;
     }
     else if(mystrcmp(argv[index], "(") == 0)
@@ -154,14 +188,14 @@ int get_expr(int argc, char **argv, int index, struct info_command *ic)
         push(output, op);
         free(op);
         if(!opr)
-          return 1;
+          return ERROR_PARS;
       }
       pop(opr);
       index++;
     }
   }
-  if(opr->start != NULL && mystrcmp(opr->start->data, "\\(") == 0)
-    return 1;
+  if(opr->start != NULL && mystrcmp(opr->start->data, "\\(") == 0)  
+    return ERROR_PARS;
   while(opr->start)
   {
     char *op = pop(opr);
@@ -173,17 +207,28 @@ int get_expr(int argc, char **argv, int index, struct info_command *ic)
   return 0;
 }
 
-struct info_command *get_info_command(int argc, char **argv)
+int myparser(int argc, char **argv, struct info_command *ic)
 {
-  argc = argc;
-  struct info_command *ic = malloc(sizeof(struct info_command));
   int opt = get_opt(argv, ic);
   if(opt >= argc)
-    return ic;
+    return 0;
   int file = get_file(argc, argv, opt, ic);
   if(file >= argc)
-    return ic;
-  get_expr(argc, argv, file, ic);
+    return 0;
+  int res = get_expr(argc, argv, file, ic);
+  return res;
+}
+
+struct info_command *initialize_ic()
+{
+  struct info_command *ic = malloc(sizeof(struct info_command));
+  if(!ic)
+    return NULL;
+  ic->opt_d = OPT_DEFAULT;
+  ic->opt = OPT_DEFAULT;
+  ic->nb_files = 0;
+  ic->files = NULL;
+  ic->el = NULL;
   return ic;
 }
 
@@ -192,7 +237,7 @@ void free_ic(struct info_command *ic)
   int i = 0;
   if(ic->files != NULL)
   {
-    while(i <= ic->nb)
+    while(i <= ic->nb_files)
     {
       free(ic->files[i]);
       i++;
