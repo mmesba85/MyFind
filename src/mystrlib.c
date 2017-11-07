@@ -1,6 +1,23 @@
 #include <stdlib.h>
 #include "mystrlib.h"
 
+/**
+	* \file mystrlib.c
+	* \brief Basic functions implementing operations on strings
+	* \author Maroua Mesbahi
+	* \version 1.0
+	* \date 12/11/2017
+	* mystrlib.c contains various operations on strings 
+	* such as copying and concatenation
+	*
+	*/
+
+/**
+	* \brief Functions that calculate the length of a string
+	*
+	* \param String
+	* \return integer representing the length of the string
+	*/
 size_t mystrlen(char *str)
 {
 	size_t res = 0;
@@ -9,6 +26,14 @@ size_t mystrlen(char *str)
 	return res;
 }
 
+/**
+	* \brief fill the res argument 
+	* \details fill the res argument with the right path 
+	* 		from the variable path to the variable dir_name
+	* \param res 	the resulting string containing the right path at the end
+	* \param path 	a string containing the path 
+	* \param dir_name 	the name of the file/directory that will be concatenated
+	*/
 void make_path(char *res, char *path, char *dir_name)
 {
 	size_t len = mystrlen(path);
@@ -34,6 +59,14 @@ void make_path(char *res, char *path, char *dir_name)
 	res[i] = '\0';
 }
 
+/**
+	* \brief compare two strings
+	* \param str1 	first string
+	* \param str2 	second string
+	* \return 0 if str1 matches str2, 1 if str1 is greater than str2
+	* and -1 if str1 is less than str2
+	*/
+
 int mystrcmp(char *str1, char *str2)
 {
 	size_t len1 = mystrlen(str1);
@@ -58,6 +91,12 @@ int mystrcmp(char *str1, char *str2)
 	return -1;
 }
 
+/**
+	* \brief copy dest in src
+	* \param src 	the string to be copied
+	* \param dest 	where to copy the string
+	* \param len 	the length of dest
+	*/
 void copy_str(char *src, char *dest, size_t len)
 {
   size_t i = 0;
@@ -66,6 +105,13 @@ void copy_str(char *src, char *dest, size_t len)
   dest[len] = '\0';
 }
 
+/**
+	* \brief concatenate two string
+	* \param res 	the resulting string
+	* \param str 	the string which will me added to res
+	* \param b 	the begging index of the copy
+	* \param res_len 	the length of the resulting string
+	*/
 int mystrcat(char *res, char *str, int b, int res_len)
 {
 	size_t len = mystrlen(str);
@@ -83,6 +129,12 @@ int mystrcat(char *res, char *str, int b, int res_len)
 	return j;
 }
 
+/**
+	* \brief get the type of an expression
+	* \details the type would be either name, type, print or exec
+	* \param expr 	the expression
+	* \return a string containing the type of the expression
+	*/
 char *get_type(char *expr)
 {
 	size_t len = mystrlen(expr);
