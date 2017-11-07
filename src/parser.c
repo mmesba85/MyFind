@@ -30,7 +30,7 @@ int get_opt(char **argv, struct info_command *ic)
       }
       else
         break;
-   	  i++;
+      i++;
     }
     else
       break;
@@ -38,127 +38,139 @@ int get_opt(char **argv, struct info_command *ic)
   return i;
 }
 
-int get_file(char **argv, int index, struct info_command *ic)
+int get_file(int argc, char **argv, int index, struct info_command *ic)
 {
-  while(argv[index])
-  {
+  int nb = 0;
+  int i = index;
+  int j = 0;
+  printf("%d %d\n", argc, index);
+  while(index < argc)
+  { 
     if(argv[index][0] == '-' || argv[index][0] == '(')
       break;
-    else
-    {
-      int len = mystrlen(argv[index]);
-      char *file = malloc(len);
-      copy_str(argv[index], file, len);
-      ic->file = file;
-    }
+    nb++;
     index++;
   }
+  char **files = malloc(nb * sizeof(char *));
+  ic->nb = nb;
+  while(i <= nb)
+  {
+    int len = mystrlen(argv[i]);
+    files[j] = malloc(len);
+    copy_str(argv[i], files[j], len);
+    printf("%s\n", files[j]);
+    i++;
+    j++;
+    
+  }
+  ic->files = files;
   return index;
 }
 
 int is_precedence(char *op1, char *op2)
 {
-	if(mystrcmp(op2, "(") == 0 || mystrcmp(op2, ")") == 0)
-	{
-		return 0;
-	}
-	 else if(mystrcmp(op1, "-o") == 0 && mystrcmp(op2, "-o"))
-	{
-		return 1;
-	}
-	else if(mystrcmp(op1, "-o") == 0 && mystrcmp(op2, "-a"))
-	{
-		return 0;
-	}
-	else if(mystrcmp(op1, "-a") == 0 && mystrcmp(op2, "-o"))
-	{
-		return 1;
-	}
-	else
-		return 1;
+  if(mystrcmp(op2, "(") == 0 || mystrcmp(op2, ")") == 0)
+  {
+    return 0;
+  }
+   else if(mystrcmp(op1, "-o") == 0 && mystrcmp(op2, "-o"))
+  {
+    return 1;
+  }
+  else if(mystrcmp(op1, "-o") == 0 && mystrcmp(op2, "-a"))
+  {
+    return 0;
+  }
+  else if(mystrcmp(op1, "-a") == 0 && mystrcmp(op2, "-o"))
+  {
+    return 1;
+  }
+  else
+    return 1;
 }
 
 int get_expr(int argc, char **argv, int index, struct info_command *ic)
 {
-	struct expressions_list *output = initialize();
-	struct expressions_list *opr = initialize();
-	int aux = 0;
-	while(index < argc)
-	{
-		
-		if(mystrcmp(argv[index], "-o") == 0 ||
-			mystrcmp(argv[index], "-a") == 0)
-		{
-			while(opr->start != NULL && is_precedence(argv[index], opr->start->data) == 1)
-			{
-				char *op = pop(opr);
-				push(output, op);
-				free(op);
-			}
-			push(opr, argv[index]);
-			index++;
-			aux = 0;
-		}
-		else if(aux == 1 && argv[index][0] != '(' && argv[index][0] != ')')
-		{
-			while(opr->start != NULL && is_precedence("-a", opr->start->data) == 1)
-			{
-				char *op = pop(opr);
-				push(output, op);
-				free(op);
-			}
-			push(opr, "-a");	
-			aux = 0;
-		}
-		else if(index < argc && argv[index][0] == '-')
-		{
-			int len = mystrlen(argv[index]);
-			char *data = malloc(len);
-			int s = mystrcat(data, argv[index], 0, len);
-			index++;
+  struct expressions_list *output = initialize();
+  struct expressions_list *opr = initialize();
+  int aux = 0;
+  while(index < argc)
+  {
+    
+    if(mystrcmp(argv[index], "-o") == 0 ||
+      mystrcmp(argv[index], "-a") == 0)
+    {
+      while(opr->start != NULL && is_precedence(argv[index], opr->start->data) == 1)
+      {
+        char *op = pop(opr);
+        push(output, op);
+        free(op);
+      }
+      push(opr, argv[index]);
+      index++;
+      aux = 0;
+    }
+    else if(aux == 1 && argv[index][0] != '(' && argv[index][0] != ')')
+    {
+      while(opr->start != NULL && is_precedence("-a", opr->start->data) == 1)
+      {
+        char *op = pop(opr);
+        push(output, op);
+        free(op);
+      }
+      push(opr, "-a");  
+      aux = 0;
+    }
+    else if(index < argc && argv[index][0] == '-')
+    {
+      int len = mystrlen(argv[index]);
+      char *data = malloc(len);
+      int s = mystrcat(data, argv[index], 0, len);
+      index++;
 
-			while(index < argc && argv[index][0] != '-' 
-				&& argv[index][0] != '(' && argv[index][0] != ')')
-			{
-				len += mystrlen(argv[index]);
-				data = realloc(data, len+1);
-				data[s] = ' ';
-				s = mystrcat(data, argv[index], s+1, len);
-				index++;	
-			}
-			push(output, data);
-			free(data);
-			aux = 1;
-		}
-		else if(mystrcmp(argv[index], "(") == 0)
-		{
-			push(opr, argv[index]);
-			index++;
-		}
-		else if(mystrcmp(argv[index], ")") == 0)
-		{
-			while(mystrcmp(opr->start->data, "(") != 0)
-			{
-				char *op = pop(opr);
-				push(output, op);
-				free(op);
-				if(!opr)
-					return 1;
-			}
-			pop(opr);
-			index++;
-		}
-	}
-	if(opr->start != NULL && mystrcmp(opr->start->data, "\\(") == 0)
-		return 1;
-	while(opr->start)
-	{
-		char *op = pop(opr);
-		push(output, op);
-		free(op);
-	}
-	ic->el = output;
-	return 0;
+      while(index < argc && argv[index][0] != '-' 
+        && argv[index][0] != '(' && argv[index][0] != ')')
+      {
+        len += mystrlen(argv[index]);
+        data = realloc(data, len+1);
+        data[s] = ' ';
+        s = mystrcat(data, argv[index], s+1, len);
+        index++;  
+      }
+      push(output, data);
+      free(data);
+      aux = 1;
+    }
+    else if(mystrcmp(argv[index], "(") == 0)
+    {
+      push(opr, argv[index]);
+      index++;
+    }
+    else if(mystrcmp(argv[index], ")") == 0)
+    {
+      while(mystrcmp(opr->start->data, "(") != 0)
+      {
+        char *op = pop(opr);
+        push(output, op);
+        free(op);
+        if(!opr)
+          return 1;
+      }
+      pop(opr);
+      index++;
+    }
+  }
+  if(opr->start != NULL && mystrcmp(opr->start->data, "\\(") == 0)
+    return 1;
+  while(opr->start)
+  {
+    char *op = pop(opr);
+    push(output, op);
+    free(op);
+  }
+  ic->el = output;
+  free_path(opr);
+  return 0;
 }
 
 struct info_command *get_info_command(int argc, char **argv)
@@ -167,19 +179,27 @@ struct info_command *get_info_command(int argc, char **argv)
   struct info_command *ic = malloc(sizeof(struct info_command));
   int opt = get_opt(argv, ic);
   if(opt >= argc)
-  	return ic;
-  int file = get_file(argv, opt, ic);
+    return ic;
+  int file = get_file(argc, argv, opt, ic);
   if(file >= argc)
-  	return ic;
+    return ic;
   get_expr(argc, argv, file, ic);
   return ic;
 }
 
 void free_ic(struct info_command *ic)
 {
-	if(ic->file != NULL)
-		free(ic->file);
-	if(ic->el != NULL)
-		free_path(ic->el);
-	free(ic);
+  int i = 0;
+  if(ic->files != NULL)
+  {
+    while(i <= ic->nb)
+    {
+      free(ic->files[i]);
+      i++;
+    }
+    free(ic->files);
+  }
+  if(ic->el != NULL)
+    free_path(ic->el);
+  free(ic);
 }
