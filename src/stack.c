@@ -1,8 +1,25 @@
+/**
+** \file stack.c
+** \brief basic functions to manipulate a stack structure
+** \author Maroua Mesbahi
+** \version 1.0
+** \date 12/11/2017
+** the file contains operations such as pop, push or delete
+*/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include "mystrlib.h"
 #include "myfind.h"
 
+
+
+
+
+/**
+** \brief Initialize a struct expressions_list
+** \return new expressions_list structure with a start node initialized to NULL
+*/
 struct expressions_list *initialize()
 {
   struct expressions_list *new = malloc(sizeof(struct expressions_list));
@@ -12,6 +29,11 @@ struct expressions_list *initialize()
   return new;
 }
 
+/**
+** \brief push the element data to the stack expressions_list
+** \param el 	expressions_list structure
+** \param data 	string containing the expression
+*/
 void push(struct expressions_list *el, char *data)
 {
   struct stack *new = malloc(sizeof(struct stack));
@@ -25,6 +47,11 @@ void push(struct expressions_list *el, char *data)
   el->start = new;
 }
 
+/**
+** \brief pop the last element added to the expressions_list
+** \param el 	expressions_list structure
+** \return a string containing the last element added to the expressions_list
+*/
 char *pop(struct expressions_list *el)
 {
   if (!el)
@@ -57,6 +84,10 @@ void print_s(struct expressions_list *el)
   }
 }
 
+/**
+** \brief free the allocated memory used by the expressions_list
+** \param el 	expressions_list structure that needs to be freed
+*/
 void free_path(struct expressions_list *el)
 {
   while(el->start)
@@ -67,6 +98,12 @@ void free_path(struct expressions_list *el)
   free(el);
 }
 
+/**
+** \brief create a copy of an expressions list
+** \details it is useful when exploring the expressions_list for each file
+** \param el 	the expressions_list that will be copied
+** \return a copy of the expressions_list given as parameter
+*/
 struct expressions_list *copy_stack(struct expressions_list *el)
 {
 	struct expressions_list *res = initialize();

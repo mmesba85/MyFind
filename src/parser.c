@@ -1,3 +1,13 @@
+/**
+** \file parser.c
+** \brief Parse the command line
+** \author Maroua Mesbahi
+** \version 1.0
+** \date 12/11/2017
+**  Using the command line, and while parsing it, this file shall fill
+**  the fields of the command_info structure
+*/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -5,6 +15,12 @@
 #include "myfind.h"
 #include "mystrlib.h"
 
+/**
+** \brief Get the option given by the user
+** \param argv  Array of strings containing the command line
+** \param ic  The info_command that needs to be filled
+** \return The new offset
+*/
 int get_opt(char **argv, struct info_command *ic)
 {
   int i = 1;
@@ -38,11 +54,15 @@ int get_opt(char **argv, struct info_command *ic)
   return i;
 }
 
-int get_file(int argc, char **argv, int index, struct info_command *ic)
+/**
+** \brief Calculate number of files given to the command
+** \param argv  Array of strings containing the command line
+** \param index   the offset
+** \return The number of files
+*/
+int get_nb_files(int argc, char **argv, int index)
 {
   int nb = 0;
-  int i = index;
-  int j = 0;
   while(index < argc)
   { 
     if(argv[index][0] == '-' || argv[index][0] == '(')
@@ -50,24 +70,57 @@ int get_file(int argc, char **argv, int index, struct info_command *ic)
     nb++;
     index++;
   }
-  char **files = malloc(nb * sizeof(char *));
-  if(!files)
-    return 1;
-  ic->nb_files = nb;
-  while(j <= nb && i < argc)
-  {
-    int len = mystrlen(argv[i]);
-    files[j] = malloc(len);
-    if(!files[j])
+  return nb; 
+}
+
+/**
+** \brief Collect the files name 
+** \param argv  Array of strings containing the command line
+** \param index   the offset
+** \param ic  The info_command that needs to be filled
+** \return The new offset
+*/
+int get_file(int argc, char **argv, int index, struct info_command *ic)
+{
+  int nb = get_nb_files(argc, argv, index);
+  int j = 0;
+  char **files = NULL;
+  if(nb > 0)
+  {  
+    ic->nb_files = nb;
+    files = malloc(nb * sizeof(char *));
+    if(!files)
       return 1;
-    copy_str(argv[i], files[j], len);
-    i++;
-    j++; 
+    while(j <= nb && index < argc)
+    {
+      int len = mystrlen(argv[index]);
+      files[j] = malloc(len);
+      if(!files[j])
+        return 1;
+      copy_str(argv[index], files[j], len);
+      index++;
+      j++;
+    }
+  }
+  else
+  {
+    ic->nb_files = 1;
+    files = malloc(sizeof(char *));
+    files[0] = malloc(2);
+    files[0][0] = '.';
+    files[0][1] = '\0';
   }
   ic->files = files;
   return index;
 }
 
+/**
+** \brief Check the precedence between two operands
+** \param op1   The first operand
+** \param op2   The second operand
+** \return 0 if the first operand has lower precedence, 1 otherwise
+** \details This method is needed while implementing the Shunting Yard Alorithm
+*/
 int is_precedence(char *op1, char *op2)
 {
   if(mystrcmp(op2, "(") == 0 || mystrcmp(op2, ")") == 0)
@@ -90,6 +143,29 @@ int is_precedence(char *op1, char *op2)
     return 1;
 }
 
+/**
+** \brief Check if the given argument to type test is right
+** \param c   The character that follows the -type
+** \return 0 if it is right, 1 otherwise
+*/
+int check_type_arg(char c)
+{
+  if( c == 'f' || c == 'd' || c == 'b' || c == 'c' || c == 'l'
+     || c == 'p' || c == 's')
+    return 0;
+  return 1;
+}
+
+
+/**
+** \brief Check if the command is right
+** \param argv  Array of strings containing the command line
+** \param argc  Size of the array
+** \param ic  The info_command that needs to be filled
+** \return 
+** \details Check if the command has the right name 
+** and the right number of arguments
+*/
 int check_command(int argc, char **argv, int index)
 {
   if(mystrcmp(argv[index], "-name") != 0 && mystrcmp(argv[index], "-type") != 0
@@ -106,10 +182,30 @@ int check_command(int argc, char **argv, int index)
       warnx("missing argument to '%s'", argv[index]);
       return ERROR_ARG;
     }
+    else
+    {
+      if(mystrcmp(argv[index], "-type") == 0)
+      {
+        int check = check_type_arg(argv[index][0]);
+        if(check != 0)
+        {
+          warnx("Unknown argument to -type: %c", argv[index+1][0]);
+          return ERROR_ARG;
+        }
+      }  
+    }
   }
   return 0;
 }
 
+/**
+** \brief Collect the action/test name and its argument (if exists)
+** \param argc  Size of the array
+** \param argv  Array of strings containing the command line
+** \param index  The offset 
+** \param output  The output stack 
+** \return 0 if success, 1 otherwise
+*/
 int get_command(int argc, char **argv, int index, struct expressions_list *output)
 {
   int res = check_command(argc, argv, index);
@@ -134,7 +230,15 @@ int get_command(int argc, char **argv, int index, struct expressions_list *outpu
   }
   return 0;
 }
-
+/**
+** \brief Fill the expressions_list field of the info_command structure
+** \param argc  Size of the array
+** \param argv  Array of strings containing the command line
+** \param index  The offset 
+** \param ic  The info_commmand structure
+** \return 0 if success, 1 otherwise
+** \details This method use the Shunring Yard Algorithm
+*/
 int get_expr(int argc, char **argv, int index, struct info_command *ic)
 {
   struct expressions_list *output = initialize();
@@ -207,6 +311,13 @@ int get_expr(int argc, char **argv, int index, struct info_command *ic)
   return 0;
 }
 
+/**
+** \brief The main parsing function
+** \param argc  The Arguments array size
+** \param argv  The arguments array
+** \param ic  The info_command structure that needs to be filled
+** \return 0 if success, 1 otherwise
+*/
 int myparser(int argc, char **argv, struct info_command *ic)
 {
   int opt = get_opt(argv, ic);
@@ -219,6 +330,12 @@ int myparser(int argc, char **argv, struct info_command *ic)
   return res;
 }
 
+/**
+** \brief Initialize a new info_command structure
+** \return The new initialized info_command
+** \details Options are set to default, the number of files to 0 
+** and the expressions_list to null
+*/
 struct info_command *initialize_ic()
 {
   struct info_command *ic = malloc(sizeof(struct info_command));
@@ -232,6 +349,10 @@ struct info_command *initialize_ic()
   return ic;
 }
 
+/**
+** \brief Free the info_command structure
+** \param ic   The info_command structure that needs to be freed
+*/
 void free_ic(struct info_command *ic)
 {
   int i = 0;

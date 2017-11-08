@@ -15,25 +15,36 @@
 #define ERROR_PRD 3
 #define NO_DIR 4
 
+/**
+** \brief The informtions collected while parsing the command line
+*/
 struct info_command
 {
-  int opt_d;
-  int opt;
-  int nb_files;
-  char **files;
-  struct expressions_list *el;
+  int opt_d; /*!< The value corresponding to the -d option */
+  int opt;   /*!< The value corresponding to the other options */ 
+  int nb_files; /*!< The number of files given in the command line */
+  char **files;  /*!< An array containing all files name given in the command line*/
+  struct expressions_list *el;  /*!< A stack containing the expressions */
 };
 
-
+/**
+** \brief The expressions_list structure
+** \details It is supposed to hold all the expressions given
+** in the command line
+*/
 struct expressions_list
 {
-  struct stack *start;
+  struct stack *start; /*!< The first node of the structure */
 };
 
+/**
+** \brief The stack structure
+** \details It is the first node of the expressions_list structure
+*/
 struct stack
 {
-  char *data;
-  struct stack *next;
+  char *data;	/*!< The first element of the stack */
+  struct stack *next;	/*!< A pointer to the next element */
 };
 
 

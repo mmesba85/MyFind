@@ -1,23 +1,23 @@
+/**
+** \file mystrlib.c
+** \brief Basic functions implementing operations on strings
+** \author Maroua Mesbahi
+** \version 1.0
+** \date 12/11/2017
+** mystrlib.c contains various operations on strings 
+** such as copying and concatenation
+**
+*/
+
 #include <stdlib.h>
 #include "mystrlib.h"
 
-/**
-	* \file mystrlib.c
-	* \brief Basic functions implementing operations on strings
-	* \author Maroua Mesbahi
-	* \version 1.0
-	* \date 12/11/2017
-	* mystrlib.c contains various operations on strings 
-	* such as copying and concatenation
-	*
-	*/
 
 /**
-	* \brief Functions that calculate the length of a string
-	*
-	* \param String
-	* \return integer representing the length of the string
-	*/
+** \brief Functions that calculate the length of a string
+** \param String
+** \return integer representing the length of the string
+**/
 size_t mystrlen(char *str)
 {
 	size_t res = 0;

@@ -1,3 +1,14 @@
+/**
+** \file evaluate.c
+** \brief Evaluate an expressions list on a given file
+** \author Maroua Mesbahi
+** \version 1.0
+** \date 12/11/2017
+** This file contains methods that will check if a given file
+** matches the specifications of an expressions list
+**
+*/
+
 #define _DEFAULT_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,6 +20,16 @@
 #include "myfind.h"
 #include "mystrlib.h"
 
+
+/**
+** \brief Check if a file_name matches the pattern given 
+** \param path 	The path of a file
+** \param readfile 	The struct dirent
+** \param expr 	the expression that needs to be verified
+** \return 1 if it matches, otherwise 0
+** \details path parameter is useful when checking the origin file
+** and expr parameter has to be of type '-name'
+*/
 int check_name(char *path, struct dirent *readfile, char *expr)
 {
 	if(mystrlen(expr) < 6)
@@ -20,12 +41,18 @@ int check_name(char *path, struct dirent *readfile, char *expr)
 	return 0;
 }
 
+/**
+** \brief check the directory type
+** \param path 	the path of the directory
+** \param type 	the type that needs to be checked
+** \return 1 if it matches, otherwise 0
+*/
 int check_dir_type(char *path, char type)
 {
 	struct stat buff;
 	int st = stat(path, &buff);
 	if( st == -1)
-  		return 1;
+  		return 0;
   	switch(type)
   	{
   		case 'b':
@@ -63,10 +90,17 @@ int check_dir_type(char *path, char type)
   	return 0;
 }
 
+/**
+** \brief check The type of a given file
+** \param path 	The path of the file
+** \param readfile 	The struct dirent corresponding to the file
+** \param expr 	the expression the needs to be checked
+** \return 1 if it matches, 0 otherwise
+*/
 int check_type(char *path, struct dirent *readfile, char *expr)
 {
 	if(mystrlen(expr) < 6)
-		return 1;
+		return 0;
 	if(readfile == NULL)
 		return check_dir_type(path, expr[6]);
 	else
@@ -108,7 +142,15 @@ int check_type(char *path, struct dirent *readfile, char *expr)
 	return 0;
 }
 
-
+/**
+** \brief The main evaluate function
+** \param path 	The path of the file
+** \param readfile 	The struct dirent corresponding to the file
+** \param expr 	The element of an expressions_list
+** \return 1 if it matches, 0 otherwise
+** \details This method use the expression given as argument to check
+** the type, and according to the type check its argument
+*/
 int evaluate(char *path, struct dirent *readfile, char *expr)
 {
 	char *type = get_type(expr);
@@ -131,6 +173,14 @@ int evaluate(char *path, struct dirent *readfile, char *expr)
 	return 0;
 }
 
+/**
+** \brief The main loop of checking the expressions_list
+** \param path 	The path name
+** \param readfile 	The struct dirent corresponding to the file	
+** \param ic 	the struct info_command containing details 
+** about the command line
+** \return 1 if it matches, 0 otherwise
+*/
 int check_el(char *path, struct dirent *readfile, struct info_command *ic)
 {
 	struct expressions_list *el = copy_stack(ic->el);

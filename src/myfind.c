@@ -1,3 +1,13 @@
+/**
+** \file myfind.c
+** \brief The main project file
+** \author Maroua Mesbahi
+** \version 1.0
+** \date 12/11/2017
+**  This file do operations on directory as checking if the option matches the file
+**	and then calls the myfind function that will explore the right directories
+*/
+
 #define _DEFAULT_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,9 +17,18 @@
 #include <sys/stat.h>
 #include <fnmatch.h>
 #include <err.h>
+#include <fcntl.h>
 #include "myfind.h"
 #include "mystrlib.h"
 
+/**
+** \brief Check if the given file argument is a link
+** \param dir_name 	The file name
+** \param ic 	The info_command structure
+** \return 0 on success, 1 otherwise
+** \details Check if the given file argument is a link and then 
+** whether the option matches
+*/
 int check_link(char *dir_name, struct info_command *ic)
 {
   struct stat buff;
@@ -26,13 +45,19 @@ int check_link(char *dir_name, struct info_command *ic)
   return 0;
 }
 
+/**
+** \brief Open the directory given
+** \param dir_name 	The directory name
+** \return Dir structure 
+*/
 DIR *open_dir(char *dir_name)
 {
   DIR *dir = NULL;
   if(dir_name)
-    dir = opendir(dir_name);
-  else
-    opendir(".");
+  {
+    int fd = open(dir_name, O_CLOEXEC);
+    dir = fdopendir(fd);
+  }
   if(!dir)
   {
     warnx("'%s': No such file or directory", dir_name);
@@ -41,6 +66,13 @@ DIR *open_dir(char *dir_name)
   return dir; 
 }
 
+/**
+** \brief The main myfind function
+** \param dir_name 	The directory name
+** \param ic 	The info_command structure
+** \return 0 on success, 1 otherwise
+** \details This method explores the tree recursively while calling readdir
+*/
 int myfind(char *dir_name, struct info_command *ic)
 {
   DIR *dir = open_dir(dir_name);
@@ -55,7 +87,8 @@ int myfind(char *dir_name, struct info_command *ic)
   }
   int check = check_link(dir_name, ic);
   if(check != 0)
-    return 1;
+  	return 1;
+
   struct dirent *readfile = NULL;
   while((readfile = readdir(dir)))
   {
@@ -85,7 +118,6 @@ int myfind(char *dir_name, struct info_command *ic)
     else
     	check_el(dir_name, readfile, ic); 
   }
-  closedir(dir);
   return 0;
 }
 
