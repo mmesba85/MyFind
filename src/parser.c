@@ -64,17 +64,17 @@ int get_nb_files(int argc, char **argv, int index)
 {
   int nb = 0;
   while(index < argc)
-  { 
+  {
     if(argv[index][0] == '-' || argv[index][0] == '(')
       break;
     nb++;
     index++;
   }
-  return nb; 
+  return nb;
 }
 
 /**
-** \brief Collect the files name 
+** \brief Collect the files name
 ** \param argv  Array of strings containing the command line
 ** \param index   the offset
 ** \param ic  The info_command that needs to be filled
@@ -86,18 +86,18 @@ int get_file(int argc, char **argv, int index, struct info_command *ic)
   int j = 0;
   char **files = NULL;
   if(nb > 0)
-  {  
+  {
     ic->nb_files = nb;
     files = malloc(nb * sizeof(char *));
     if(!files)
       return 1;
-    while(j <= nb && index < argc)
+    while(j < nb && index < argc)
     {
       int len = mystrlen(argv[index]);
-      files[j] = malloc(len);
+      files[j] = calloc(len+1, sizeof(char));
       if(!files[j])
         return 1;
-      copy_str(argv[index], files[j], len);
+      copy_str(argv[index], files[j], len+1);
       index++;
       j++;
     }
@@ -156,14 +156,13 @@ int check_type_arg(char c)
   return 1;
 }
 
-
 /**
 ** \brief Check if the command is right
 ** \param argv  Array of strings containing the command line
 ** \param argc  Size of the array
 ** \param ic  The info_command that needs to be filled
-** \return 
-** \details Check if the command has the right name 
+** \return
+** \details Check if the command has the right name
 ** and the right number of arguments
 */
 int check_command(int argc, char **argv, int index)
@@ -172,7 +171,7 @@ int check_command(int argc, char **argv, int index)
     && mystrcmp(argv[index], "-print") != 0 && mystrcmp(argv[index], "-exec") != 0)
   {
     warnx("unknown predicate '%s'", argv[index]);
-    return ERROR_PRD;
+    return 1;
   }
   if(mystrcmp(argv[index], "-name") == 0 || mystrcmp(argv[index], "-type") == 0
     || mystrcmp(argv[index], "-exec") == 0)
@@ -180,21 +179,46 @@ int check_command(int argc, char **argv, int index)
     if(index+1 >= argc)
     {
       warnx("missing argument to '%s'", argv[index]);
-      return ERROR_ARG;
+      return 1;
     }
     else
     {
       if(mystrcmp(argv[index], "-type") == 0)
       {
-        int check = check_type_arg(argv[index][0]);
+        int check = check_type_arg(argv[index+1][0]);
         if(check != 0)
         {
           warnx("Unknown argument to -type: %c", argv[index+1][0]);
-          return ERROR_ARG;
+          return 1;
         }
-      }  
+      }
     }
   }
+  return 0;
+}
+
+/**
+** \brief Push the test coommand into the stack
+** \param argv  Array of strings containing the command line
+** \param index  The offset
+** \param output  The output stack
+*/
+int push_test(char **argv, int index, struct expressions_list *output)
+{
+  int len = mystrlen(argv[index]);
+  char *data = malloc(len + 1);
+  if(!data)
+    return 1;
+  int s = mystrcat(data, argv[index], 0, len);
+  index++;
+  len += mystrlen(argv[index]);
+  data = realloc(data, len+2);
+  if(!data)
+    return 1;
+  data[s] = ' ';
+  s = mystrcat(data, argv[index], s+1, len);
+  push(output, data);
+  free(data);
   return 0;
 }
 
@@ -202,8 +226,8 @@ int check_command(int argc, char **argv, int index)
 ** \brief Collect the action/test name and its argument (if exists)
 ** \param argc  Size of the array
 ** \param argv  Array of strings containing the command line
-** \param index  The offset 
-** \param output  The output stack 
+** \param index  The offset
+** \param output  The output stack
 ** \return 0 if success, 1 otherwise
 */
 int get_command(int argc, char **argv, int index, struct expressions_list *output)
@@ -212,21 +236,11 @@ int get_command(int argc, char **argv, int index, struct expressions_list *outpu
   if(res != 0)
     return res;
   if(mystrcmp(argv[index], "-name") == 0 || mystrcmp(argv[index], "-type") == 0)
+    return push_test(argv, index, output);
+  else if(mystrcmp(argv[index], "-print") == 0)
   {
-    int len = mystrlen(argv[index]);
-    char *data = malloc(len + 1);
-    if(!data)
-      return 1;
-    int s = mystrcat(data, argv[index], 0, len);
-    index++;
-    len += mystrlen(argv[index]);
-    data = realloc(data, len+2);
-    if(!data)
-      return 1;
-    data[s] = ' ';
-    s = mystrcat(data, argv[index], s+1, len);
-    push(output, data);
-    free(data);
+    push(output, "-print");
+    return 2;
   }
   return 0;
 }
@@ -234,19 +248,19 @@ int get_command(int argc, char **argv, int index, struct expressions_list *outpu
 ** \brief Fill the expressions_list field of the info_command structure
 ** \param argc  Size of the array
 ** \param argv  Array of strings containing the command line
-** \param index  The offset 
+** \param index  The offset
 ** \param ic  The info_commmand structure
 ** \return 0 if success, 1 otherwise
 ** \details This method use the Shunring Yard Algorithm
 */
 int get_expr(int argc, char **argv, int index, struct info_command *ic)
 {
-  struct expressions_list *output = initialize();
-  struct expressions_list *opr = initialize();
+  struct expressions_list *output = initialize_stack();
+  struct expressions_list *opr = initialize_stack();
   int aux = 0;
   while(index < argc)
   {
-    
+
     if(mystrcmp(argv[index], "-o") == 0 ||
       mystrcmp(argv[index], "-a") == 0)
     {
@@ -268,15 +282,22 @@ int get_expr(int argc, char **argv, int index, struct info_command *ic)
         push(output, op);
         free(op);
       }
-      push(opr, "-a");  
+      push(opr, "-a");
       aux = 0;
     }
     else if(index < argc && argv[index][0] == '-')
     {
       int res = get_command(argc, argv, index, output);
-      if(res != 0)
+      if(res == 1)
+      {
+        free_exprlist(opr);
+        free_exprlist(output);
         return res;
-      index += 2;
+      }
+      if(res == 0)
+        index += 2;
+      else
+        index += 1;
       aux = 1;
     }
     else if(mystrcmp(argv[index], "(") == 0)
@@ -292,14 +313,21 @@ int get_expr(int argc, char **argv, int index, struct info_command *ic)
         push(output, op);
         free(op);
         if(!opr)
-          return ERROR_PARS;
+          return 1;
       }
       pop(opr);
       index++;
     }
+    else
+    {
+      free_exprlist(output);
+      free_exprlist(opr);
+      warnx("paths must precede expression: %s", argv[index]);
+      return 1;
+    }
   }
-  if(opr->start != NULL && mystrcmp(opr->start->data, "\\(") == 0)  
-    return ERROR_PARS;
+  if(opr->start != NULL && mystrcmp(opr->start->data, "\\(") == 0)
+    return 1;
   while(opr->start)
   {
     char *op = pop(opr);
@@ -307,7 +335,7 @@ int get_expr(int argc, char **argv, int index, struct info_command *ic)
     free(op);
   }
   ic->el = output;
-  free_path(opr);
+  free_exprlist(opr);
   return 0;
 }
 
@@ -323,6 +351,7 @@ int myparser(int argc, char **argv, struct info_command *ic)
   int opt = get_opt(argv, ic);
   if(opt >= argc)
     return 0;
+
   int file = get_file(argc, argv, opt, ic);
   if(file >= argc)
     return 0;
@@ -333,7 +362,7 @@ int myparser(int argc, char **argv, struct info_command *ic)
 /**
 ** \brief Initialize a new info_command structure
 ** \return The new initialized info_command
-** \details Options are set to default, the number of files to 0 
+** \details Options are set to default, the number of files to 0
 ** and the expressions_list to null
 */
 struct info_command *initialize_ic()
@@ -358,7 +387,7 @@ void free_ic(struct info_command *ic)
   int i = 0;
   if(ic->files != NULL)
   {
-    while(i <= ic->nb_files)
+    while(i < ic->nb_files)
     {
       free(ic->files[i]);
       i++;
@@ -366,6 +395,6 @@ void free_ic(struct info_command *ic)
     free(ic->files);
   }
   if(ic->el != NULL)
-    free_path(ic->el);
+    free_exprlist(ic->el);
   free(ic);
 }

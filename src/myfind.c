@@ -87,8 +87,10 @@ int myfind(char *dir_name, struct info_command *ic)
   }
   int check = check_link(dir_name, ic);
   if(check != 0)
+  {
+  	closedir(dir);
   	return 1;
-
+  }
   struct dirent *readfile = NULL;
   while((readfile = readdir(dir)))
   {
@@ -100,7 +102,7 @@ int myfind(char *dir_name, struct info_command *ic)
 
     if(readfile->d_type == DT_DIR && mystrcmp(readfile->d_name, ".") != 0 
       && mystrcmp(readfile->d_name, "..") != 0)
-    	myfind(dir_path, ic);
+    		myfind(dir_path, ic);
     else if(readfile->d_type == DT_LNK && ic->opt == OPT_L)
     	myfind(dir_path, ic);
    	else
@@ -118,6 +120,7 @@ int myfind(char *dir_name, struct info_command *ic)
     else
     	check_el(dir_name, readfile, ic); 
   }
+  closedir(dir);
   return 0;
 }
 
@@ -126,9 +129,13 @@ int main(int argc, char **argv)
   struct info_command *ic = initialize_ic();
   if(ic == NULL)
   	return 1;
+
   int parse = myparser(argc, argv, ic);
   if(parse != 0)
+  {
+  	free_ic(ic);
   	return 1;
+  }
   int i = 0;
   int res = 0;
   while(i < ic->nb_files)
