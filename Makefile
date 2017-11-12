@@ -1,6 +1,6 @@
 CC=gcc
 EXEC=myfind
-SRC= myfind.c mystrlib.c stack.c parser.c evaluate.c
+SRC= myfind.c mystrlib.c stack.c parser.c evaluate.c test.c action.c
 OBJ= $(SRC:.c=.o)
 CFLAGS=-Wall -Werror -Wextra -pedantic -std=c99 -g
 VPATH=src
