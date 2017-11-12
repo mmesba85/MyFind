@@ -168,7 +168,9 @@ int check_type_arg(char c)
 int check_command(int argc, char **argv, int index)
 {
   if(mystrcmp(argv[index], "-name") != 0 && mystrcmp(argv[index], "-type") != 0
-    && mystrcmp(argv[index], "-print") != 0 && mystrcmp(argv[index], "-exec") != 0)
+    && mystrcmp(argv[index], "-print") != 0 &&
+    mystrcmp(argv[index], "-exec") != 0 &&
+    mystrcmp(argv[index], "-execdir") != 0 )
   {
     warnx("unknown predicate '%s'", argv[index]);
     return 1;
@@ -202,24 +204,60 @@ int check_command(int argc, char **argv, int index)
 ** \param argv  Array of strings containing the command line
 ** \param index  The offset
 ** \param output  The output stack
+** \return The next offset
 */
 int push_test(char **argv, int index, struct expressions_list *output)
 {
   int len = mystrlen(argv[index]);
   char *data = malloc(len + 1);
   if(!data)
-    return 1;
+    return -1;
   int s = mystrcat(data, argv[index], 0, len);
   index++;
   len += mystrlen(argv[index]);
   data = realloc(data, len+2);
   if(!data)
-    return 1;
+    return -1;
   data[s] = ' ';
   s = mystrcat(data, argv[index], s+1, len);
   push(output, data);
   free(data);
-  return 0;
+  return index+1;
+}
+
+/**
+** \brief Push the execution coommand into the stack
+** \param argv  Array of strings containing the command line
+** \param index  The offset
+** \param output  The output stack
+** \return The next offset 
+*/
+int push_exec(int argc, char **argv, int index, struct expressions_list *output)
+{
+  int len = mystrlen(argv[index]);
+  char *data = malloc(len + 1);
+  if(!data)
+    return -1;
+  int s = mystrcat(data, argv[index], 0, len);
+  index++;
+  while(argv[index][0] != ';')
+  {
+    len += mystrlen(argv[index]);
+    data = realloc(data, len+3);
+    if(!data)
+      return -1;
+    data[s] = ' ';
+    s = mystrcat(data, argv[index], s+1, len+1);
+    index++;
+    if(index >= argc)
+    {
+      warnx("missing argument to '-exec'");
+      return -1;
+    }
+  }
+  push(output, data);
+  free(data);
+  return index+1;
 }
 
 /**
@@ -234,14 +272,16 @@ int get_command(int argc, char **argv, int index, struct expressions_list *outpu
 {
   int res = check_command(argc, argv, index);
   if(res != 0)
-    return res;
+    return -1;
   if(mystrcmp(argv[index], "-name") == 0 || mystrcmp(argv[index], "-type") == 0)
     return push_test(argv, index, output);
   else if(mystrcmp(argv[index], "-print") == 0)
   {
     push(output, "-print");
-    return 2;
+    return -2;
   }
+  else if(mystrcmp(argv[index], "-exec") == 0 || mystrcmp(argv[index], "-execdir") == 0)
+    return push_exec(argc, argv, index, output);
   return 0;
 }
 /**
@@ -288,14 +328,14 @@ int get_expr(int argc, char **argv, int index, struct info_command *ic)
     else if(index < argc && argv[index][0] == '-')
     {
       int res = get_command(argc, argv, index, output);
-      if(res == 1)
+      if(res == -1)
       {
         free_exprlist(opr);
         free_exprlist(output);
         return res;
       }
-      if(res == 0)
-        index += 2;
+      if(res != -2)
+        index = res;
       else
         index += 1;
       aux = 1;

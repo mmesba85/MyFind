@@ -26,7 +26,7 @@
 ** \param dir_name 	The file name
 ** \param ic 	The info_command structure
 ** \return 0 on success, 1 otherwise
-** \details Check if the given file argument is a link and then 
+** \details Check if the given file argument is a link and then
 ** whether the option matches
 */
 int check_link(char *dir_name, struct info_command *ic)
@@ -41,14 +41,14 @@ int check_link(char *dir_name, struct info_command *ic)
       ic->opt = OPT_DEFAULT;
     else if(ic->opt != OPT_L)
       return 1;
-  }  
+  }
   return 0;
 }
 
 /**
 ** \brief Open the directory given
 ** \param dir_name 	The directory name
-** \return Dir structure 
+** \return Dir structure
 */
 DIR *open_dir(char *dir_name)
 {
@@ -63,7 +63,7 @@ DIR *open_dir(char *dir_name)
     warnx("'%s': No such file or directory", dir_name);
     return NULL;
   }
-  return dir; 
+  return dir;
 }
 
 /**
@@ -83,7 +83,7 @@ int myfind(char *dir_name, struct info_command *ic)
     if(ic->el == NULL)
       printf("%s\n", dir_name);
     else
-      check_el(dir_name, NULL, ic); 
+      check_el(dir_name, NULL, ic);
   }
   int check = check_link(dir_name, ic);
   if(check != 0)
@@ -96,11 +96,11 @@ int myfind(char *dir_name, struct info_command *ic)
   {
     if(mystrcmp(readfile->d_name, ".") == 0 || mystrcmp(readfile->d_name, "..") == 0)
       continue;
-    
+
     char dir_path[mystrlen(dir_name) + mystrlen (readfile->d_name) + 1];
     make_path(dir_path, dir_name, readfile->d_name);
 
-    if(readfile->d_type == DT_DIR && mystrcmp(readfile->d_name, ".") != 0 
+    if(readfile->d_type == DT_DIR && mystrcmp(readfile->d_name, ".") != 0
       && mystrcmp(readfile->d_name, "..") != 0)
     		myfind(dir_path, ic);
     else if(readfile->d_type == DT_LNK && ic->opt == OPT_L)
@@ -110,7 +110,7 @@ int myfind(char *dir_name, struct info_command *ic)
     	if(ic->el == NULL)
     		printf("%s\n", dir_path);
     	else
-    		check_el(dir_path, readfile, ic); 
+    		check_el(dir_path, readfile, ic);
   	}
   }
   if(ic->opt_d == OPT_D)
@@ -118,7 +118,7 @@ int myfind(char *dir_name, struct info_command *ic)
   	if(ic->el == NULL)
     	printf("%s\n", dir_name);
     else
-    	check_el(dir_name, readfile, ic); 
+    	check_el(dir_name, readfile, ic);
   }
   closedir(dir);
   return 0;

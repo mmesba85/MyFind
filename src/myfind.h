@@ -34,6 +34,8 @@ struct evaluate
 {
   int nb_print; /*!< Determines how many times the file would be printed */
   int current_op; /*! < Corresponds to the operator read */
+  int eval;
+  int step;
 };
 
 int myfind(char *dir_name, struct info_command *ic);
@@ -44,6 +46,10 @@ int evaluate(char *path, struct dirent *readfile, char *exp,
 void free_ic(struct info_command *ic);
 struct info_command *initialize_ic();
 int myparser(int argc, char **argv, struct info_command *ic);
+int exec_command(char *type, char *expr);
+int check_name(char *path, struct dirent *readfile, char *expr,
+  struct info_command *ic);
+int check_type(char *path, struct dirent *readfile, char *expr);
 
 
 #endif /* MYFIND_H */

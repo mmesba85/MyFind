@@ -173,6 +173,20 @@ int stack_contains(struct expressions_list *list, char *str)
         free(data);
         return 0;
       }
+      if(mystrcmp(str, "-exec") == 0 &&
+      str_contains(data, "-exec") == 0)
+      {
+        free_exprlist(el);
+        free(data);
+        return 0;
+      }
+      if(mystrcmp(str, "-execdir") == 0 &&
+      str_contains(data, "-execdir") == 0)
+      {
+        free_exprlist(el);
+        free(data);
+        return 0;
+      }
     }
     free(data);
   }

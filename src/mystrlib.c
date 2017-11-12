@@ -101,7 +101,7 @@ void copy_str(char *src, char *dest, size_t len)
   size_t i = 0;
   len = len;
   size_t l = mystrlen(src);
-  for(i = 0; i< l; i++)
+  for(i = 0; i < l; i++)
     dest[i] = src[i];
   dest[l] = '\0';
 }
@@ -127,7 +127,7 @@ int mystrcat(char *res, char *str, int b, int res_len)
     i++;
   }
   res[b+j] = '\0';
-  return j;
+  return b+j;
 }
 
 /**
