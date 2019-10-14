@@ -10,3 +10,7 @@
     -exec
     -combination of the expressions above using operators
 
+# Test:
+```
+myfind > tests/test.sh
+```
