@@ -1,5 +1,7 @@
 # Instruction:
-  ./myfind [options] [files] [expressions_list]
+```
+myfind>./myfind [options] [files] [expressions_list]
+```
  
 # Features:
   Myfind executable can be used with multiple options: -H, -L, -d and -P followed by a list of a files.
@@ -12,5 +14,5 @@
 
 # Test:
 ```
-myfind > tests/test.sh
+myfind> tests/test.sh
 ```
