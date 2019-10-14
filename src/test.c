@@ -17,6 +17,7 @@
 #include <sys/stat.h>
 #include <fnmatch.h>
 #include <errno.h>
+#include <string.h>
 #include "myfind.h"
 #include "mystrlib.h"
 
@@ -30,7 +31,7 @@ int is_source(char *path, char **files, int nb)
 {
   for(int i = 0; i < nb; i++)
   {
-    if(mystrcmp(files[i], path) == 0)
+    if(strcmp(files[i], path) == 0)
       return 0;
   }
   return 1;
@@ -46,7 +47,7 @@ char *get_dir(char *path)
   int aux = 0;
   int index = 0;
   int count = 0;
-  int len = mystrlen(path);
+  int len = strlen(path);
   while(index < len)
   {
     if(path[index] == '/')
@@ -76,7 +77,7 @@ char *get_dir(char *path)
 */
 int check_name(char *path, struct dirent *readfile, char *expr, struct info_command *ic)
 {
-  if(mystrlen(expr) < 6)
+  if(strlen(expr) < 6)
     return 2;
   if(readfile != NULL)
   {
@@ -152,7 +153,7 @@ int check_dir_type(char *path, char type)
 int check_type(char *path, struct dirent *readfile, char *expr)
 {
 
-  if(mystrlen(expr) < 6)
+  if(strlen(expr) < 6)
     return 0;
   if(readfile == NULL)
     return check_dir_type(path, expr[6]);

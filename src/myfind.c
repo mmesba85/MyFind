@@ -17,6 +17,7 @@
 #include <sys/stat.h>
 #include <fnmatch.h>
 #include <err.h>
+#include <string.h>
 #include <fcntl.h>
 #include "myfind.h"
 #include "mystrlib.h"
@@ -94,14 +95,14 @@ int myfind(char *dir_name, struct info_command *ic)
   struct dirent *readfile = NULL;
   while((readfile = readdir(dir)))
   {
-    if(mystrcmp(readfile->d_name, ".") == 0 || mystrcmp(readfile->d_name, "..") == 0)
+    if(strcmp(readfile->d_name, ".") == 0 || strcmp(readfile->d_name, "..") == 0)
       continue;
 
-    char dir_path[mystrlen(dir_name) + mystrlen (readfile->d_name) + 1];
+    char dir_path[strlen(dir_name) + strlen (readfile->d_name) + 1];
     make_path(dir_path, dir_name, readfile->d_name);
 
-    if(readfile->d_type == DT_DIR && mystrcmp(readfile->d_name, ".") != 0
-      && mystrcmp(readfile->d_name, "..") != 0)
+    if(readfile->d_type == DT_DIR && strcmp(readfile->d_name, ".") != 0
+      && strcmp(readfile->d_name, "..") != 0)
     		myfind(dir_path, ic);
     else if(readfile->d_type == DT_LNK && ic->opt == OPT_L)
     	myfind(dir_path, ic);

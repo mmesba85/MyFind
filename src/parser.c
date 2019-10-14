@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 #include <err.h>
 #include "myfind.h"
 #include "mystrlib.h"
@@ -93,11 +94,11 @@ int get_file(int argc, char **argv, int index, struct info_command *ic)
       return 1;
     while(j < nb && index < argc)
     {
-      int len = mystrlen(argv[index]);
+      int len = strlen(argv[index]);
       files[j] = calloc(len+1, sizeof(char));
       if(!files[j])
         return 1;
-      copy_str(argv[index], files[j], len+1);
+      strncpy(files[j], argv[index], len+1);
       index++;
       j++;
     }
@@ -123,19 +124,19 @@ int get_file(int argc, char **argv, int index, struct info_command *ic)
 */
 int is_precedence(char *op1, char *op2)
 {
-  if(mystrcmp(op2, "(") == 0 || mystrcmp(op2, ")") == 0)
+  if(strcmp(op2, "(") == 0 || strcmp(op2, ")") == 0)
   {
     return 0;
   }
-   else if(mystrcmp(op1, "-o") == 0 && mystrcmp(op2, "-o"))
+   else if(strcmp(op1, "-o") == 0 && strcmp(op2, "-o"))
   {
     return 1;
   }
-  else if(mystrcmp(op1, "-o") == 0 && mystrcmp(op2, "-a"))
+  else if(strcmp(op1, "-o") == 0 && strcmp(op2, "-a"))
   {
     return 0;
   }
-  else if(mystrcmp(op1, "-a") == 0 && mystrcmp(op2, "-o"))
+  else if(strcmp(op1, "-a") == 0 && strcmp(op2, "-o"))
   {
     return 1;
   }
@@ -167,16 +168,16 @@ int check_type_arg(char c)
 */
 int check_command(int argc, char **argv, int index)
 {
-  if(mystrcmp(argv[index], "-name") != 0 && mystrcmp(argv[index], "-type") != 0
-    && mystrcmp(argv[index], "-print") != 0 &&
-    mystrcmp(argv[index], "-exec") != 0 &&
-    mystrcmp(argv[index], "-execdir") != 0 )
+  if(strcmp(argv[index], "-name") != 0 && strcmp(argv[index], "-type") != 0
+    && strcmp(argv[index], "-print") != 0 &&
+    strcmp(argv[index], "-exec") != 0 &&
+    strcmp(argv[index], "-execdir") != 0 )
   {
     warnx("unknown predicate '%s'", argv[index]);
     return 1;
   }
-  if(mystrcmp(argv[index], "-name") == 0 || mystrcmp(argv[index], "-type") == 0
-    || mystrcmp(argv[index], "-exec") == 0)
+  if(strcmp(argv[index], "-name") == 0 || strcmp(argv[index], "-type") == 0
+    || strcmp(argv[index], "-exec") == 0)
   {
     if(index+1 >= argc)
     {
@@ -185,7 +186,7 @@ int check_command(int argc, char **argv, int index)
     }
     else
     {
-      if(mystrcmp(argv[index], "-type") == 0)
+      if(strcmp(argv[index], "-type") == 0)
       {
         int check = check_type_arg(argv[index+1][0]);
         if(check != 0)
@@ -208,13 +209,13 @@ int check_command(int argc, char **argv, int index)
 */
 int push_test(char **argv, int index, struct expressions_list *output)
 {
-  int len = mystrlen(argv[index]);
+  int len = strlen(argv[index]);
   char *data = malloc(len + 1);
   if(!data)
     return -1;
   int s = mystrcat(data, argv[index], 0, len);
   index++;
-  len += mystrlen(argv[index]);
+  len += strlen(argv[index]);
   data = realloc(data, len+2);
   if(!data)
     return -1;
@@ -234,7 +235,7 @@ int push_test(char **argv, int index, struct expressions_list *output)
 */
 int push_exec(int argc, char **argv, int index, struct expressions_list *output)
 {
-  int len = mystrlen(argv[index]);
+  int len = strlen(argv[index]);
   char *data = malloc(len + 1);
   if(!data)
     return -1;
@@ -242,7 +243,7 @@ int push_exec(int argc, char **argv, int index, struct expressions_list *output)
   index++;
   while(argv[index][0] != ';')
   {
-    len += mystrlen(argv[index]);
+    len += strlen(argv[index]);
     data = realloc(data, len+3);
     if(!data)
       return -1;
@@ -273,14 +274,14 @@ int get_command(int argc, char **argv, int index, struct expressions_list *outpu
   int res = check_command(argc, argv, index);
   if(res != 0)
     return -1;
-  if(mystrcmp(argv[index], "-name") == 0 || mystrcmp(argv[index], "-type") == 0)
+  if(strcmp(argv[index], "-name") == 0 || strcmp(argv[index], "-type") == 0)
     return push_test(argv, index, output);
-  else if(mystrcmp(argv[index], "-print") == 0)
+  else if(strcmp(argv[index], "-print") == 0)
   {
     push(output, "-print");
     return -2;
   }
-  else if(mystrcmp(argv[index], "-exec") == 0 || mystrcmp(argv[index], "-execdir") == 0)
+  else if(strcmp(argv[index], "-exec") == 0 || strcmp(argv[index], "-execdir") == 0)
     return push_exec(argc, argv, index, output);
   return 0;
 }
@@ -301,8 +302,8 @@ int get_expr(int argc, char **argv, int index, struct info_command *ic)
   while(index < argc)
   {
 
-    if(mystrcmp(argv[index], "-o") == 0 ||
-      mystrcmp(argv[index], "-a") == 0)
+    if(strcmp(argv[index], "-o") == 0 ||
+      strcmp(argv[index], "-a") == 0)
     {
       while(opr->start != NULL && is_precedence(argv[index], opr->start->data) == 1)
       {
@@ -340,14 +341,14 @@ int get_expr(int argc, char **argv, int index, struct info_command *ic)
         index += 1;
       aux = 1;
     }
-    else if(mystrcmp(argv[index], "(") == 0)
+    else if(strcmp(argv[index], "(") == 0)
     {
       push(opr, argv[index]);
       index++;
     }
-    else if(mystrcmp(argv[index], ")") == 0)
+    else if(strcmp(argv[index], ")") == 0)
     {
-      while(mystrcmp(opr->start->data, "(") != 0)
+      while(strcmp(opr->start->data, "(") != 0)
       {
         char *op = pop(opr);
         push(output, op);
@@ -366,7 +367,7 @@ int get_expr(int argc, char **argv, int index, struct info_command *ic)
       return 1;
     }
   }
-  if(opr->start != NULL && mystrcmp(opr->start->data, "\\(") == 0)
+  if(opr->start != NULL && strcmp(opr->start->data, "\\(") == 0)
     return 1;
   while(opr->start)
   {

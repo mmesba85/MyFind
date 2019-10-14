@@ -10,11 +10,9 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "mystrlib.h"
 #include "myfind.h"
-
-
-
 
 
 /**
@@ -42,9 +40,9 @@ void push(struct expressions_list *el, char *data)
   struct stack *new = malloc(sizeof(struct stack));
   if (!new || !el)
     return;
-  size_t len = mystrlen(data);
+  size_t len = strlen(data);
   char *aux = calloc(len+1, sizeof(char));
-  copy_str(data, aux, len+1);
+  strncpy(aux, data, len+1);
   new->data = aux;
   new->next = el->start;
   el->start = new;
@@ -64,11 +62,11 @@ char *pop(struct expressions_list *el)
   struct stack *s = el->start;
   if(s)
   {
-    size_t len = mystrlen(s->data);
+    size_t len = strlen(s->data);
     char *res = calloc(len+1, sizeof(char));
     if(!res)
     	return NULL;
-    copy_str(s->data, res, len+1);
+    strncpy(res, s->data, len+1);
     free(s->data);
     el->start = s->next;
     free(s);
@@ -150,8 +148,8 @@ int stack_contains(struct expressions_list *list, char *str)
   while(el->start)
   {
     char *data = pop(el);
-    if(mystrcmp(data, "-print") == 0 &&
-    mystrcmp(str, "-print") == 0)
+    if(strcmp(data, "-print") == 0 &&
+    strcmp(str, "-print") == 0)
     {
       free_exprlist(el);
       free(data);
@@ -159,28 +157,28 @@ int stack_contains(struct expressions_list *list, char *str)
     }
     else
     {
-      if(mystrcmp(str, "-name") == 0 &&
+      if(strcmp(str, "-name") == 0 &&
       str_contains(data, "-name") == 0)
       {
           free_exprlist(el);
           free(data);
           return 0;
       }
-      if(mystrcmp(str, "-type") == 0 &&
+      if(strcmp(str, "-type") == 0 &&
       str_contains(data, "-type") == 0)
       {
         free_exprlist(el);
         free(data);
         return 0;
       }
-      if(mystrcmp(str, "-exec") == 0 &&
+      if(strcmp(str, "-exec") == 0 &&
       str_contains(data, "-exec") == 0)
       {
         free_exprlist(el);
         free(data);
         return 0;
       }
-      if(mystrcmp(str, "-execdir") == 0 &&
+      if(strcmp(str, "-execdir") == 0 &&
       str_contains(data, "-execdir") == 0)
       {
         free_exprlist(el);

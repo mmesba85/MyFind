@@ -17,6 +17,7 @@
 #include <sys/stat.h>
 #include <fnmatch.h>
 #include <errno.h>
+#include <string.h>
 #include "myfind.h"
 #include "mystrlib.h"
 
@@ -32,23 +33,22 @@
 int evaluate(char *path, struct dirent *readfile, char *expr, struct info_command *ic, struct evaluate *e)
 {
   char *type = get_type(expr);
-  ic = ic;
-  if(mystrcmp(type, "-name") == 0)
+  if(strcmp(type, "-name") == 0)
   {
     free(type);
     return check_name(path, readfile, expr, ic);
   }
-  else if(mystrcmp(type, "-type") == 0)
+  else if(strcmp(type, "-type") == 0)
   {
     free(type);
     return check_type(path, readfile, expr);
   }
-  else if(mystrcmp(type, "-print") == 0)
+  else if(strcmp(type, "-print") == 0)
   {
     e->nb_print += 1;
     return 1;
   }
-  else if(mystrcmp(type, "-exec") == 0 || mystrcmp(type, "-execdir") == 0)
+  else if(strcmp(type, "-exec") == 0 || strcmp(type, "-execdir") == 0)
   {
     if(e->eval == 1 || e->step == 0)
       return exec_command(type, expr);
@@ -146,11 +146,11 @@ void print_result(char *path, struct dirent *readfile, struct info_command *ic,
   struct evaluate *e, char *last)
 {
   int evaluation_result = 0;
-  if(mystrcmp(last, "1") != 0 && mystrcmp(last, "0") != 0)
+  if(strcmp(last, "1") != 0 && strcmp(last, "0") != 0)
     evaluation_result = evaluate(path, readfile, last, ic, e);
   else
   {
-    if(mystrcmp(last, "1") == 0)
+    if(strcmp(last, "1") == 0)
       evaluation_result = 1;
     else
       evaluation_result = 0;
@@ -180,8 +180,8 @@ int process_expressions(struct expressions_list *res, char *path, struct dirent
   int eval = 0;
   struct expressions_list *aux = reverse_stack(res);
   while(stop == 0 && aux->start != NULL &&
-    mystrcmp(aux->start->data, "1") != 0 &&
-    mystrcmp(aux->start->data, "0") != 0)
+    strcmp(aux->start->data, "1") != 0 &&
+    strcmp(aux->start->data, "0") != 0)
   {
     char *expr = pop(aux);
     int expr_eval = evaluate(path, readfile, expr, ic, e);
@@ -219,15 +219,15 @@ int check_el(char *path, struct dirent *readfile, struct info_command *ic)
   while(el->start)
   {
     char *token = pop(el);
-    if(mystrcmp(token, "-o") != 0 && mystrcmp(token, "-a") != 0)
+    if(strcmp(token, "-o") != 0 && strcmp(token, "-a") != 0)
     {
       push(res, token);
       free(token);
       continue;
     }
-    if(mystrcmp(token, "-o") == 0)
+    if(strcmp(token, "-o") == 0)
       e->current_op = 0;
-    else if(mystrcmp(token, "-a") == 0)
+    else if(strcmp(token, "-a") == 0)
       e->current_op = 1;
     if(e->current_op != 2)
     {

@@ -20,6 +20,7 @@
 #include <fcntl.h>
 #include <err.h>
 #include <errno.h>
+#include <string.h>
 #include "myfind.h"
 #include "mystrlib.h"
 
@@ -33,10 +34,10 @@
 */
 int nb_args(char *type, char *expr)
 {
-  size_t len = mystrlen(expr);
+  size_t len = strlen(expr);
   int res = 1;
   size_t i = 0;
-  if(mystrcmp(type, "-exec") == 0)
+  if(strcmp(type, "-exec") == 0)
     i = 6;
   else
     i = 9;
@@ -71,12 +72,12 @@ size_t get_arg_len(char *expr, size_t start, size_t len)
 */
 char **get_args(char *type, char *expr)
 {
-  size_t len = mystrlen(expr);
+  size_t len = strlen(expr);
   int nb = nb_args(type, expr);
   int j = 0;
   int i = 0;
   size_t index = 0;
-  if(mystrcmp(type, "-exec") == 0)
+  if(strcmp(type, "-exec") == 0)
     index = 6;
   else
     index = 9;
@@ -134,7 +135,7 @@ int exec_command(char *type, char *expr)
 
   if(pid == 0)
   {
-    if(mystrcmp(type, "-exec") == 0)
+    if(strcmp(type, "-exec") == 0)
       execvp(args[0], args);
     exit(1);
   }

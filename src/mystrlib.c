@@ -10,21 +10,9 @@
 */
 
 #include <stdlib.h>
+#include <string.h>
 #include "mystrlib.h"
 
-
-/**
-** \brief Functions that calculate the length of a string
-** \param String
-** \return integer representing the length of the string
-**/
-size_t mystrlen(char *str)
-{
-  size_t res = 0;
-  while(str[res] != '\0')
-    res++;
-  return res;
-}
 
 /**
 ** \brief fill the res argument
@@ -36,7 +24,7 @@ size_t mystrlen(char *str)
 */
 void make_path(char *res, char *path, char *dir_name)
 {
-  size_t len = mystrlen(path);
+  size_t len = strlen(path);
   size_t i = 0;
   size_t j = 0;
   while(i < len)
@@ -49,7 +37,7 @@ void make_path(char *res, char *path, char *dir_name)
     res[i] = '/';
     i++;
   }
-  len = mystrlen(dir_name);
+  len = strlen(dir_name);
   while(j < len)
   {
     res[i] = dir_name[j];
@@ -57,53 +45,6 @@ void make_path(char *res, char *path, char *dir_name)
     i++;
   }
   res[i] = '\0';
-}
-
-/**
-** \brief compare two strings
-** \param str1   first string
-** \param str2   second string
-** \return 0 if str1 matches str2, 1 if str1 is greater than str2
-** and -1 if str1 is less than str2
-*/
-int mystrcmp(char *str1, char *str2)
-{
-  size_t len1 = mystrlen(str1);
-  size_t len2 = mystrlen(str2);
-  size_t index = 0;
-  if(len1 > len2)
-    index = len2;
-  else
-    index = len1;
-  size_t i = 0;
-  for(i = 0; i < index; i++)
-  {
-    if(str1[i] > str2[i])
-      return 1;
-    else if(str1[i] < str2[i])
-      return -1;
-  }
-  if(len1 == len2)
-    return 0;
-  else if(len1 > len2)
-    return 1;
-  return -1;
-}
-
-/**
-** \brief copy dest in src
-** \param src   the string to be copied
-** \param dest   where to copy the string
-** \param len   the length of dest
-*/
-void copy_str(char *src, char *dest, size_t len)
-{
-  size_t i = 0;
-  len = len;
-  size_t l = mystrlen(src);
-  for(i = 0; i < l; i++)
-    dest[i] = src[i];
-  dest[l] = '\0';
 }
 
 /**
@@ -115,7 +56,7 @@ void copy_str(char *src, char *dest, size_t len)
 */
 int mystrcat(char *res, char *str, int b, int res_len)
 {
-  size_t len = mystrlen(str);
+  size_t len = strlen(str);
   size_t i = 0;
   int j = 0;
   while(i < len)
@@ -140,9 +81,9 @@ char *get_type(char *expr)
 {
 
   size_t i = 0;
-  if(mystrcmp(expr, "-print") == 0)
+  if(strcmp(expr, "-print") == 0)
     return "-print";
-  size_t len = mystrlen(expr);
+  size_t len = strlen(expr);
   char *res = malloc(6);
   if(len > 6)
   {
@@ -164,7 +105,7 @@ char *get_type(char *expr)
 */
 int str_contains(char *str, char *subs)
 {
-	size_t len = mystrlen(str);
+	size_t len = strlen(str);
 	size_t i = 0;
 	if(len < 6)
 		return 1;
